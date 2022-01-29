@@ -1,11 +1,12 @@
 const bcrypt = require('bcryptjs')
 const user = require('../models/user-model')
+const {passport,getToken, verifyToken} = require('../middlewares/passport')
 
 exports.register = async (req,res) => {
     let {name,email,password,roleType} = req.body
     // console.log(req.body)
     if(!name || !email || !password || !roleType){
-        console.log({name,email,password,roleType})
+        //console.log({name,email,password,roleType})
         return res.status(404).send('Invalid request')
     }
 
@@ -27,5 +28,33 @@ exports.register = async (req,res) => {
     catch(err){
         console.log(err)
         return res.status(500).send('An error occurred')
+    }
+}
+
+exports.login = async(req,res) => {
+    const reqEmail = req.body.email
+    const reqPswd = req.body.password
+    // console.log(reqEmail,reqPswd)
+    try{
+        let dbResponse
+        dbResponse = await user.findOne({email:reqEmail})
+        // console.log(dbResponse)
+        // return res.send(dbResponse)
+        const match = bcrypt.compare(reqPswd,dbResponse.password)
+        if(match){
+            const token = getToken(dbResponse)
+            return res.status(200).send({
+                success : true,
+                message : 'Login successful',
+                token
+            })
+        }
+        else{
+            return res.status(401).send('Incorrect email id or password')
+        }
+    }
+    catch(err){
+        console.log('User auth error', err)
+        return res.status(500).send('Something went wrong')
     }
 }
