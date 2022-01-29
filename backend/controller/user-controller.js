@@ -34,24 +34,31 @@ exports.register = async (req,res) => {
 exports.login = async(req,res) => {
     const reqEmail = req.body.email
     const reqPswd = req.body.password
-    // console.log(reqEmail,reqPswd)
     try{
         let dbResponse
         dbResponse = await user.findOne({email:reqEmail})
+        if(!dbResponse){
+            return res.status(401).send('Incorrect Email id')
+        }
         // console.log(dbResponse)
         // return res.send(dbResponse)
-        const match = bcrypt.compare(reqPswd,dbResponse.password)
-        if(match){
-            const token = getToken(dbResponse)
-            return res.status(200).send({
-                success : true,
-                message : 'Login successful',
-                token
-            })
-        }
-        else{
-            return res.status(401).send('Incorrect email id or password')
-        }
+        bcrypt.compare(reqPswd,dbResponse.password,(err,success)=>{
+            if(err){
+                console.log(err)
+                return res.status(500).send('Something went wrong')
+            }
+            else if(success){
+                const token = getToken(dbResponse)
+                return res.status(200).send({
+                    success : true,
+                    message : 'Login successful',
+                    token
+                })
+            }
+            else{
+                return res.status(401).send('Incorrect password')
+            }
+        })
     }
     catch(err){
         console.log('User auth error', err)
