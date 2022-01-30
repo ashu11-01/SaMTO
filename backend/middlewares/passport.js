@@ -5,10 +5,6 @@ const jwtStrategy = require('passport-jwt').Strategy
 const extractJwt = require('passport-jwt').ExtractJwt
 require('dotenv').config()
 
-// passport.use(user.createStrategy())
-// passport.serializeUser(user.serializeUser())
-// passport.deserializeUser(user.deserializeUser())
-
 const options = {
     jwtFromRequest: extractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.JWT_SECRET
@@ -30,7 +26,9 @@ passport.use(
     }))
 
 exports.passport = passport
-exports.getToken = (user) => jwt.sign(user.toJSON(), process.env.JWT_SECRET, {expiresIn: 300})
+exports.getToken = (usr) =>{
+    return jwt.sign(JSON.parse(JSON.stringify(usr)), process.env.JWT_SECRET, {expiresIn: 300})
+}    
 exports.verifyToken = (token) => jwt.verify(token,process.env.JWT_SECRET,(err,decoded)=>{
     if(err)
         return err

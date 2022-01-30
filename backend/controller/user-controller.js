@@ -48,7 +48,8 @@ exports.login = async(req,res) => {
                 return res.status(500).send('Something went wrong')
             }
             else if(success){
-                const token = getToken(dbResponse)
+                const userObj = {'_id':dbResponse._id}
+                const token = getToken(userObj)
                 return res.status(200).send({
                     success : true,
                     message : 'Login successful',
@@ -64,4 +65,13 @@ exports.login = async(req,res) => {
         console.log('User auth error', err)
         return res.status(500).send('Something went wrong')
     }
+}
+
+exports.getUserByEmail = (req,res,next)=>{
+    const userResult ={
+        success :true,
+        email : req.user.email,
+        roleType : req.user.roleType
+    }
+    res.send(userResult)
 }
